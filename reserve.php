@@ -52,96 +52,103 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <title>Pesan Kendaraan</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
-        /* Effect untuk form dan input agar terlihat 3D */
+        /* css */
+        body {
+            background-color: #f8f9fa;
+        }
+
         .form-container {
-            perspective: 1000px;
-        }
-
-        .form-card {
-            transform-style: preserve-3d;
-            transform: rotateX(0deg);
-            transition: transform 0.3s ease-in-out;
-            box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.1);
+            max-width: 500px;
+            margin: 50px auto;
+            padding: 20px;
+            background: white;
             border-radius: 10px;
-            padding: 30px;
-            background-color: #fff;
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
         }
 
-        .form-card:hover {
-            transform: rotateX(10deg);
-            box-shadow: 0px 10px 20px rgba(0, 0, 0, 0.15);
+        .form-container h1, .form-container h3 {
+            font-weight: bold;
+            text-align: center;
+            color: #4e54c8;
+        }
+
+        .form-container h3 {
+            margin-top: -10px;
+            margin-bottom: 30px;
+            font-size: 1.25rem;
         }
 
         .form-control {
-            transition: all 0.3s ease;
-            border-radius: 10px;
-            padding: 10px;
-            box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.1);
+            border: 1px solid #ced4da;
+            border-radius: 8px;
+            transition: border-color 0.3s, box-shadow 0.3s;
         }
 
         .form-control:focus {
-            box-shadow: inset 0 2px 10px rgba(0, 0, 0, 0.2), 0 0 8px rgba(78, 84, 200, 0.7);
-            border-color: #8f94fb;
+            border-color: #4e54c8;
+            box-shadow: 0 0 8px rgba(78, 84, 200, 0.4);
         }
 
         button.btn-primary {
-            box-shadow: 0px 5px 15px rgba(0, 0, 0, 0.1);
-            border-radius: 50px;
-            transition: transform 0.2s ease-in-out;
+            background: #4e54c8;
+            border: none;
+            padding: 10px;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: bold;
+            transition: background-color 0.3s ease, transform 0.2s;
         }
 
         button.btn-primary:hover {
-            transform: translateY(-5px);
-            box-shadow: 0px 10px 25px rgba(0, 0, 0, 0.2);
+            background-color: #6366f1;
+            transform: scale(1.02);
         }
 
-        h1 {
-            font-weight: bold;
+        button.btn-primary:focus {
+            outline: none;
+            box-shadow: 0 0 10px rgba(78, 84, 200, 0.5);
         }
+        /* css */
 
-        h3 {
-            color: #4e54c8;
-            margin-bottom: 30px;
-        }
     </style>
 </head>
 <body>
-<div class="container mt-5 form-container d-flex justify-content-center">
-    <div class="form-card">
-        <h1 class="text-center">Pesan Kendaraan</h1>
-        <h3 class="text-center"><?php echo htmlspecialchars($vehicle['nama_kendaraan']); ?></h3>
-        <form method="POST" class="mt-4">
-            <div class="mb-3">
-                <label for="name" class="form-label">Nama Penyewa</label>
-                <input type="text" name="name" class="form-control" required>
-            </div>
+<div class="form-container">
+    <h1>Pesan Kendaraan</h1>
+    <h3><?php echo htmlspecialchars($vehicle['nama_kendaraan']); ?></h3>
+    <form method="POST" class="mt-4">
+        <div class="mb-3">
+            <label for="name" class="form-label">Nama Penyewa</label>
+            <input type="text" name="name" class="form-control" required>
+        </div>
 
-            <div class="mb-3">
-                <label for="email" class="form-label">Email</label>
-                <input type="email" name="email" class="form-control" required>
-            </div>
+        <div class="mb-3">
+            <label for="email" class="form-label">Email</label>
+            <input type="email" name="email" class="form-control" required>
+        </div>
 
-            <div class="mb-3">
-                <label for="phone" class="form-label">Nomor Telepon</label>
-                <input type="text" name="phone" class="form-control" required>
-            </div>
+        <div class="mb-3">
+            <label for="phone" class="form-label">Nomor Telepon</label>
+            <input type="text" name="phone" class="form-control" required>
+        </div>
 
-            <div class="mb-3">
-                <label for="start_date" class="form-label">Tanggal Mulai Sewa</label>
-                <input type="date" name="start_date" class="form-control" required>
-            </div>
+        <div class="mb-3">
+            <label for="start_date" class="form-label">Tanggal Mulai Sewa</label>
+            <input type="date" name="start_date" class="form-control" required>
+        </div>
 
-            <div class="mb-3">
-                <label for="end_date" class="form-label">Tanggal Akhir Sewa</label>
-                <input type="date" name="end_date" class="form-control" required>
-            </div>
+        <div class="mb-3">
+            <label for="end_date" class="form-label">Tanggal Akhir Sewa</label>
+            <input type="date" name="end_date" class="form-control" required>
+        </div>
 
-            <button type="submit" class="btn btn-primary w-100">Pesan</button>
-        </form>
-    </div>
+        <button type="submit" class="btn btn-primary w-100">Pesan</button>
+    </form>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js"></script>
+
 </body>
 </html>
+
 
