@@ -99,7 +99,7 @@ $conn->close();
         <div class="row justify-content-center">
             <div class="col-md-6">
                 <div class="d-flex justify-content-center align-items-center">
-                    <img src="../img/Logo_S2R.png" class="foto text-center d-flex" width="200" alt="">
+                    <img src="./img/Logo_S2R.png" class="foto text-center d-flex" width="200" alt="">
                 </div>
                 <h4 class="login mt-5">Login</h4>
 
