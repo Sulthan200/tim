@@ -27,14 +27,13 @@ if (!$vehicle || $vehicle['stok_kendaraan'] <= 0) {
 }
 
 // Ambil data jenis pembayaran
-$paymentQuery = "SELECT * FROM tbl_jenis_bayar";
+$paymentQuery = "SELECT * FROM tbl_pembayaran";
 $paymentResult = $conn->query($paymentQuery);
 $paymentMethods = $paymentResult->fetch_all(MYSQLI_ASSOC);
 
 // Proses pemesanan
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $name = htmlspecialchars($_POST['name']);
-    $email = htmlspecialchars($_POST['email']);
     $phone = htmlspecialchars($_POST['phone']);
     $startDate = $_POST['start_date'];
     $endDate = $_POST['end_date'];
@@ -51,10 +50,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // Simpan data pemesanan ke database
     $conn->begin_transaction();
     try {
-        $insertQuery = "INSERT INTO tbl_pesanan (id_user, nama_penyewa, nomor_telepon, tgl_pinjam, tgl_kembali, id_kendaraan, id_jenis_bayar, total_pesanan, status_pesanan) 
-                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'pending')";
+        $createdAt = date("Y-m-d H:i:s"); // Waktu sekarang
+        $insertQuery = "INSERT INTO tbl_pesanan (id_user, nama_penyewa, nomor_telepon, tgl_pinjam, tgl_kembali, id_kendaraan, id_pembayaran, total_pesanan, status_pesanan, created_at) 
+                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'belum bayar', ?)";
         $stmt = $conn->prepare($insertQuery);
-        $stmt->bind_param("issssiii", $userId, $name, $phone, $startDate, $endDate, $vehicleId, $paymentMethod, $totalPrice);
+        $stmt->bind_param("issssiiis", $userId, $name, $phone, $startDate, $endDate, $vehicleId, $paymentMethod, $totalPrice, $createdAt);
         $stmt->execute();
 
         // Kurangi stok kendaraan
@@ -125,10 +125,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <input type="text" name="name" class="form-control" placeholder="Masukkan nama Anda" required>
             </div>
             <div class="mb-3">
-                <label for="email" class="form-label">Email</label>
-                <input type="email" name="email" class="form-control" placeholder="Masukkan email Anda" required>
-            </div>
-            <div class="mb-3">
                 <label for="phone" class="form-label">Nomor Telepon</label>
                 <input type="text" name="phone" class="form-control" placeholder="Masukkan nomor telepon Anda" required>
             </div>
@@ -145,8 +141,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <select name="payment_method" class="form-control" required>
                     <option value="">Pilih Metode Pembayaran</option>
                     <?php foreach ($paymentMethods as $method): ?>
-                        <option value="<?php echo $method['id_jenis_bayar']; ?>">
-                            <?php echo htmlspecialchars($method['jenis_bayar']); ?>
+                        <option value="<?php echo $method['id_pembayaran']; ?>">
+                            <?php echo htmlspecialchars($method['nama_pembayaran']); ?>
                         </option>
                     <?php endforeach; ?>
                 </select>

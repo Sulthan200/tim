@@ -2,15 +2,19 @@
 session_start(); // Memulai session
 
 // Periksa apakah pengguna sudah login
-$is_logged_in = isset($_SESSION['user']); // True jika pengguna sudah login
+if (!isset($_SESSION['user'])) {
+    header('Location: ../auth/login'); // Redirect jika belum login
+    exit;
+}
+$is_logged_in = isset($_SESSION['user']);
+$userId = $_SESSION['user']['id_user']; // Ambil ID user dari session
 
 require_once '../koneksi.php'; // Koneksi ke database
 
 // Ambil data pesanan user
-$queryOrders = "SELECT p.*, k.nama_kendaraan, j.pembayaran 
+$queryOrders = "SELECT p.*, k.nama_kendaraan 
                 FROM tbl_pesanan p
                 JOIN tbl_kendaraan k ON p.id_kendaraan = k.id_kendaraan
-                JOIN tbl_pembayaran j ON p.id_pembayaran = j.id_pembayaran
                 WHERE p.id_user = ?
                 ORDER BY p.created_at DESC";
 $stmt = $conn->prepare($queryOrders);
