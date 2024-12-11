@@ -1,20 +1,40 @@
 <?php
+session_start();
+
+// Periksa apakah pengguna telah login
+if (!isset($_SESSION['user'])) {
+    header('Location: ../auth/login'); // Redirect ke halaman login jika belum login
+    exit;
+}
+
+// Periksa apakah role user adalah admin
+if ($_SESSION['user']['role'] !== 'admin') {
+    header('Location: ../index'); // Redirect ke halaman utama jika bukan admin
+    exit;
+}
+
 require_once '../koneksi.php';
 
-// Proses otomatis: batalkan pesanan pending lebih dari 1 jam
-$queryAutoCancel = "SELECT * FROM tbl_pesanan WHERE status_pesanan = 'pending' AND TIMESTAMPDIFF(MINUTE, created_at, NOW()) > 60";
+// Proses otomatis: batalkan pesanan "belum bayar" lebih dari 1 jam
+$queryAutoCancel = "SELECT id_pesanan, id_kendaraan FROM tbl_pesanan 
+                    WHERE status_pesanan = 'belum bayar' 
+                    AND TIMESTAMPDIFF(MINUTE, created_at, NOW()) > 60";
 $resultAutoCancel = $conn->query($queryAutoCancel);
 
-while ($order = $resultAutoCancel->fetch_assoc()) {
-    $updateStockQuery = "UPDATE tbl_kendaraan SET stok_kendaraan = stok_kendaraan + 1 WHERE id_kendaraan = ?";
-    $stmt = $conn->prepare($updateStockQuery);
-    $stmt->bind_param("i", $order['id_kendaraan']);
-    $stmt->execute();
+if ($resultAutoCancel->num_rows > 0) {
+    while ($order = $resultAutoCancel->fetch_assoc()) {
+        // Kembalikan stok kendaraan
+        $updateStockQuery = "UPDATE tbl_kendaraan SET stok_kendaraan = stok_kendaraan + 1 WHERE id_kendaraan = ?";
+        $stmt = $conn->prepare($updateStockQuery);
+        $stmt->bind_param("i", $order['id_kendaraan']);
+        $stmt->execute();
 
-    $updateOrderQuery = "UPDATE tbl_pesanan SET status_pesanan = 'batal' WHERE id_pesanan = ?";
-    $stmt = $conn->prepare($updateOrderQuery);
-    $stmt->bind_param("i", $order['id_pesanan']);
-    $stmt->execute();
+        // Update status pesanan menjadi batal
+        $updateOrderQuery = "UPDATE tbl_pesanan SET status_pesanan = 'batal' WHERE id_pesanan = ?";
+        $stmt = $conn->prepare($updateOrderQuery);
+        $stmt->bind_param("i", $order['id_pesanan']);
+        $stmt->execute();
+    }
 }
 
 // Proses manual: aksi admin
@@ -23,8 +43,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $orderId = $_POST['id_pesanan'];
 
     if ($action === 'acc') {
-        // Konfirmasi pembayaran
-        $updateOrderQuery = "UPDATE tbl_pesanan SET status_pesanan = 'selesai' WHERE id_pesanan = ?";
+        // Konfirmasi pesanan oleh admin
+        $updateOrderQuery = "UPDATE tbl_pesanan SET status_pesanan = 'sukses' WHERE id_pesanan = ?";
         $stmt = $conn->prepare($updateOrderQuery);
         $stmt->bind_param("i", $orderId);
         $stmt->execute();
@@ -62,10 +82,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 
 // Ambil semua data pesanan
-$queryOrders = "SELECT p.*, k.nama_kendaraan, j.jenis_bayar 
+$queryOrders = "SELECT p.*, k.nama_kendaraan, j.nama_pembayaran 
                 FROM tbl_pesanan p
                 JOIN tbl_kendaraan k ON p.id_kendaraan = k.id_kendaraan
-                JOIN tbl_jenis_bayar j ON p.id_jenis_bayar = j.id_jenis_bayar
+                JOIN tbl_pembayaran j ON p.id_pembayaran = j.id_pembayaran
                 ORDER BY p.created_at DESC";
 $resultOrders = $conn->query($queryOrders);
 ?>
@@ -124,13 +144,15 @@ $resultOrders = $conn->query($queryOrders);
                 <td><?php echo htmlspecialchars($order['nama_penyewa']); ?></td>
                 <td><?php echo htmlspecialchars($order['nomor_telepon']); ?></td>
                 <td><?php echo htmlspecialchars($order['nama_kendaraan']); ?></td>
-                <td><?php echo htmlspecialchars($order['jenis_bayar']); ?></td>
+                <td><?php echo htmlspecialchars($order['nama_pembayaran']); ?></td>
                 <td>Rp <?php echo number_format($order['total_pesanan'], 0, ',', '.'); ?></td>
                 <td>
-                    <?php if ($order['status_pesanan'] === 'pending'): ?>
-                        <span class="badge bg-warning">Pending</span>
-                    <?php elseif ($order['status_pesanan'] === 'selesai'): ?>
-                        <span class="badge bg-success">Selesai</span>
+                    <?php if ($order['status_pesanan'] === 'belum bayar'): ?>
+                        <span class="badge bg-warning">Belum Bayar</span>
+                    <?php elseif ($order['status_pesanan'] === 'pending'): ?>
+                        <span class="badge bg-info">Pending</span>
+                    <?php elseif ($order['status_pesanan'] === 'sukses'): ?>
+                        <span class="badge bg-success">Sukses</span>
                     <?php else: ?>
                         <span class="badge bg-danger">Batal</span>
                     <?php endif; ?>

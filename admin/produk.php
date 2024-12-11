@@ -1,4 +1,17 @@
 <?php
+session_start();
+
+// Periksa apakah pengguna telah login
+if (!isset($_SESSION['user'])) {
+    header('Location: ../auth/login'); // Redirect ke halaman login jika belum login
+    exit;
+}
+
+// Periksa apakah role user adalah admin
+if ($_SESSION['user']['role'] !== 'admin') {
+    header('Location: ../index'); // Redirect ke halaman utama jika bukan admin
+    exit;
+}
 include('../koneksi.php'); // Koneksi ke database
 
 // Fungsi untuk menambah produk
